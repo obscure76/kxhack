@@ -37,6 +37,8 @@ def get_hot_posts(sub_reddit_name, number=10):
                                           down_votes=getattr(c, 'downs', 0),
                                           author=c.author.name)
                         post.comments.append(comment)
+                        if len(post.comments) == 5:
+                            break
                     except Exception:
                         pass
                 posts.append(post)

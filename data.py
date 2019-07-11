@@ -30,7 +30,7 @@ class Comment(object):
 
 
 class Post(object):
-    def __init__(self, id, title='', up_votes=0, down_votes=0, url='', comments=list,
+    def __init__(self, id, title='', up_votes=0, down_votes=0, url='', comments=[],
                  author='', sub_reddit_name=''):
         self.id = id
         self.title = title
@@ -48,7 +48,7 @@ class Post(object):
         s += "up_votes=%s,"% self.up_votes
         s += "down_votes=%s,"% self.down_votes
         s += "url=%s,"% self.url
-        s += "comments=%s,"% self.comments
+        s += "comments=%s," % self.comments
         s += "author=%s," % self.author
         s += "sub_reddit_name=%s" % self.sub_reddit_name
         return s
