@@ -5,21 +5,21 @@ reddit = praw.Reddit(client_id='',
 print(reddit.read_only)
 
 
-def get_titles(sub_reddit, number):
+def get_hot_trending_posts_titles(sub_reddit, numberOfPosts):
     titles = []
     try:
-        for submission in reddit.subreddit(sub_reddit).hot(limit=number):
+        for submission in reddit.subreddit(sub_reddit).hot(limit=numberOfPosts):
             titles.append(submission.title)
     except Exception:
         pass
     return titles
 
 
-populartitles = get_titles("popular", 3)
+populartitles = get_hot_trending_posts_titles("popular", 3)
 
 print(populartitles)
 
-hometitles = get_titles("home", 3)
+hometitles = get_hot_trending_posts_titles("home", 3)
 
 print (hometitles)
 
