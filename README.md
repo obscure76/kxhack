@@ -13,5 +13,11 @@ source ./env/bin/activate
 pip install -r requirements.txt
 
 
+# create zip 
+cd env/lib/python3.7/site-packages/
+zip -r ../lambda.zip ./*
+
+# upload the zip to S3 bucket and update the lambda
+
 
 
