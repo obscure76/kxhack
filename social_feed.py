@@ -5,9 +5,7 @@ from ask_sdk_model import Response
 from ask_sdk_model.ui import SimpleCard
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
-
-
-
+import data
 sb = SkillBuilder()
 
 
@@ -31,7 +29,7 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speech_text = "Hello World"
+        speech_text = data.WELCOME
         handler_input.response_builder.speak(speech_text).set_card(
         SimpleCard("Hello World", speech_text)).set_should_end_session(True)
         return handler_input.response_builder.response
