@@ -6,28 +6,34 @@ from ask_sdk_model.ui import SimpleCard
 from ask_sdk_model.ui import StandardCard
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
-import constant
+from ask_sdk_model.ui import Image
 import data
 import reddit_api
+import constant
 sb = SkillBuilder()
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
         return is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        speech_text = "Welcome to the Alexa Skills Kit, you can say hello!"
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text)).set_should_end_session(False)
+        # build VUI
+        speech_text = data.WELCOME_PROMPT
+
+        # build GUI
+        image = Image(data.UTIL_DATA["welcome_image"])
+        card = StandardCard(data.SKILL_NAME, "", image)
+
+        # build response
+        handler_input.response_builder\
+            .speak(speech_text)\
+            .set_card(card).set_should_end_session(False)
         return handler_input.response_builder.response
 
 
 class HelloWorldIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
         return is_intent_name("HelloWorldIntent")(handler_input)
 
     def handle(self, handler_input):
@@ -115,7 +121,7 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speech_text = "Goodbye!"
+        speech_text = data.GOODBYE_PROMPT
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
