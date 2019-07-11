@@ -1,8 +1,8 @@
 import praw
 from data import Comment, Post
 
-reddit = praw.Reddit(client_id='',
-                     client_secret='',
+reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
+                     client_secret='KJ7pQHa03HGlr1_Mhi35mXeixMw',
                      user_agent='my user agent')
 
 
@@ -16,10 +16,10 @@ def get_hot_trending_post_titles(sub_reddit, number_of_posts):
     return titles
 
 
-def get_subreddits_by_name(name):
+def get_subreddit_titles_by_name(sub_reddit_name):
     titles = []
     try:
-        for submission in reddit.subreddits.search_by_name(name):
+        for submission in reddit.subreddits.search_by_name(sub_reddit_name):
             titles.append(submission.title)
     except Exception:
         pass
@@ -62,6 +62,17 @@ def get_hot_posts(sub_reddit_name, number=10):
         print(e)
     return posts
 
+def get_subreddit_posts_by_name(sub_reddit_name):
+    try:
+        for submission in reddit.subreddits.search_by_name(sub_reddit_name):
+            try:
+                return get_hot_posts(submission.title)
+            except Exception as e:
+                print(e)
+    except Exception as e:
+        print(e)
+    return []
+
 
 def get_popular_titles():
     return get_hot_trending_post_titles("popular", 3)
@@ -70,6 +81,8 @@ def get_popular_titles():
 def get_home_titles():
     return get_hot_trending_post_titles("home", 3)
 
+def get_cricket_subreddit_titles():
+    return get_subreddit_titles_by_name("cricket")
 
-def get_cricket_subreddits():
-    return get_subreddits_by_name("cricket")
+def get_cricket_subreddit_posts():
+    return get_subreddit_posts_by_name("cricket")
