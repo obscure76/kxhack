@@ -21,7 +21,10 @@ def get_hot_posts(sub_reddit_name, number=10):
     try:
         for submission in reddit.subreddit(sub_reddit_name).hot(limit=number):
             try:
+                if submission.over_18:
+                    continue
                 post = Post(title=getattr(submission, 'title', ''),
+                            text=getattr(submission, 'selftext', ''),
                             up_votes=getattr(submission, 'ups', 0),
                             down_votes=getattr(submission, 'downs', 0),
                             url=getattr(submission, 'url', ''),
@@ -44,16 +47,19 @@ def get_hot_posts(sub_reddit_name, number=10):
                 posts.append(post)
             except Exception:
                 pass
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
     return posts
 
 
 def get_popular_titles():
     return get_hot_trending_posts_titles("popular", 3)
 
+
 def get_home_titles():
     return get_hot_trending_posts_titles("home", 3)
 
 
+for p in get_hot_posts("amazonecho"):
+    print(p)
 
