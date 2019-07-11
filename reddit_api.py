@@ -15,6 +15,7 @@ def get_hot_trending_post_titles(sub_reddit, number_of_posts):
         pass
     return titles
 
+
 def get_subreddits_by_name(name):
     titles = []
     try:
@@ -62,8 +63,10 @@ def get_hot_posts(sub_reddit_name, number=10):
 def get_popular_titles():
     return get_hot_trending_post_titles("popular", 3)
 
+
 def get_home_titles():
     return get_hot_trending_post_titles("home", 3)
+
 
 def get_cricket_subreddits():
     return get_subreddits_by_name("cricket")

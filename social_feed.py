@@ -10,6 +10,7 @@ from ask_sdk_model.ui import Image
 import data
 import reddit_api
 import constant
+
 sb = SkillBuilder()
 
 
@@ -18,6 +19,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
         return is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
+
         # build VUI
         speech_text = data.WELCOME_PROMPT
 
@@ -40,7 +42,7 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         speech_text = data.WELCOME
         handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text)).set_should_end_session(False)
+            SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
 
 
@@ -52,15 +54,36 @@ class ReadIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
 
-        hot_trending_posts_titles = reddit_api.get_hot_trending_posts_titles("popular",
-                                                                             constant.HOT_TRENDING_POSTS_COUNT)
+        hot_trending_posts_titles = []
+        try:
+            hot_trending_posts_titles += reddit_api.get_hot_trending_post_titles("popular",
+                                                                                 constant.HOT_TRENDING_POSTS_COUNT)
+        except Exception as e:
+            print(e)
+        if not hot_trending_posts_titles:
+            hot_trending_posts_titles.append("test")
         for post_title in hot_trending_posts_titles:
-            handler_input.response_builder.speak(post_title)\
-                .set_card(StandardCard(post_title, post_title))\
+            handler_input.response_builder.speak(post_title).set_card(SimpleCard(post_title, post_title))\
                 .set_should_end_session(False)
 
         return handler_input.response_builder.response
 
+
+# class NextIntentHandler(AbstractRequestHandler):
+#     def can_handle(self, handler_input):
+#         # type: (HandlerInput) -> bool
+#         return is_intent_name("ReadIntent")(handler_input)
+#
+#     def handle(self, handler_input):
+#         # type: (HandlerInput) -> Response
+#
+#         hot_trending_posts_titles = reddit_api.get_hot_trending_posts_titles("popular",
+#                                                                              constant.HOT_TRENDING_POSTS_COUNT)
+#         for post_title in hot_trending_posts_titles:
+#             handler_input.response_builder.speak(post_title).set_card(SimpleCard(post_title, post_title))
+#
+#         return handler_input.response_builder.response
+#
 
 class UpvoteIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -71,7 +94,7 @@ class UpvoteIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         speech_text = "upvote intent"
         handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("upvote intent", speech_text)).set_should_end_session(False)
+            SimpleCard("upvote intent", speech_text))
         return handler_input.response_builder.response
 
 
@@ -84,7 +107,7 @@ class AddCommentIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         speech_text = "Hello World"
         handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text)).set_should_end_session(False)
+            SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
 
 
@@ -97,7 +120,7 @@ class WriteCommentIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         speech_text = "Hello World"
         handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text)).set_should_end_session(False)
+            SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
 
 
