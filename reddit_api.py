@@ -1,6 +1,6 @@
 import praw
-reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
-                     client_secret="KJ7pQHa03HGlr1_Mhi35mXeixMw",
+reddit = praw.Reddit(client_id='',
+                     client_secret="",
                      user_agent='TestUser')
 print(reddit.read_only)
 
