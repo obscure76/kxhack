@@ -11,8 +11,8 @@ def get_hot_trending_post_titles(sub_reddit, number_of_posts):
     try:
         for submission in reddit.subreddit(sub_reddit).hot(limit=number_of_posts):
             titles.append(submission.title)
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
     return titles
 
 
@@ -21,8 +21,8 @@ def get_subreddit_titles_by_name(sub_reddit_name):
     try:
         for submission in reddit.subreddits.search_by_name(sub_reddit_name):
             titles.append(submission.title)
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
     return titles
 
 
@@ -52,11 +52,11 @@ def get_hot_posts(sub_reddit_name, number=10):
                         post.comments.append(comment)
                         if len(post.comments) == 5:
                             break
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print(e)
                 posts.append(post)
-            except Exception:
-                pass
+            except Exception as e:
+                print(e)
     except Exception as e:
         print(e)
     return posts
@@ -73,9 +73,11 @@ def get_subreddit_posts_by_name(sub_reddit_name):
     return []
 
 
+
+
+
 def get_popular_titles():
     return get_hot_trending_post_titles("popular", 3)
-
 
 def get_home_titles():
     return get_hot_trending_post_titles("home", 3)
