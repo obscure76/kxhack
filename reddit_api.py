@@ -5,19 +5,21 @@ reddit = praw.Reddit(client_id='',
 print(reddit.read_only)
 
 
-def gettheTitles(keyword, number):
-        titles = []
-        print("\nhere are the " + keyword + " feed" )
-        for submission in reddit.subreddit(keyword).hot(limit=number):
+def get_titles(sub_reddit, number):
+    titles = []
+    try:
+        for submission in reddit.subreddit(sub_reddit).hot(limit=number):
             titles.append(submission.title)
-        return titles
+    except Exception:
+        pass
+    return titles
 
 
-populartitles = gettheTitles("popular",3)
+populartitles = get_titles("popular", 3)
 
 print(populartitles)
 
-hometitles = gettheTitles("home",3)
+hometitles = get_titles("home", 3)
 
 print (hometitles)
 
