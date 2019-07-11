@@ -18,6 +18,5 @@ cd env/lib/python3.7/site-packages/
 zip -r ../lambda.zip ./*
 
 # upload the zip to S3 bucket and update the lambda
-
-
+go to https://console.aws.amazon.com/lambda/home?region=us-east-1#/functions/hello-world-python?tab=graph
 
