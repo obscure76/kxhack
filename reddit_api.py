@@ -23,7 +23,6 @@ def get_subreddit_titles_by_name(sub_reddit_name):
             titles.append(submission.title)
     except Exception:
         pass
-    print(titles)
     return titles
 
 
