@@ -88,18 +88,15 @@ def get_hot_posts(sub_reddit_name, number=5):
 
 def get_subreddit_posts_by_name(sub_reddit_name):
     try:
-        sub_reddits = reddit.subreddits.search_by_name(sub_reddit_name)
-        if not sub_reddits:
-            return []
+        sub_reddits = reddit.subreddits.search(sub_reddit_name)
         try:
-            return get_hot_posts(sub_reddits[0].title)
+            return get_hot_posts(sub_reddits.next().display_name)
         except Exception as e:
             print(e)
             return []
     except Exception as e:
         print(e)
         return []
-
 
 def upvote_a_post(post_id):
     try:

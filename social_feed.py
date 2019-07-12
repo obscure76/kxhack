@@ -115,7 +115,7 @@ def get_slot_value(intent):
 
         if not slot_sub_reddit["resolutions"]:
             print("NO Resolution")
-            return ""
+            return constant.DEFAULT_SUB_REDDIT
         resolution = slot_sub_reddit["resolutions"]["resolutions_per_authority"][0]
         print("resolution: ", resolution)
 
@@ -129,7 +129,7 @@ def get_slot_value(intent):
         print(e)
         print_exception_details()
 
-    return "cricket"
+    return constant.DEFAULT_SUB_REDDIT
 
 
 class ReadIntentHandler(AbstractRequestHandler):
@@ -142,17 +142,14 @@ class ReadIntentHandler(AbstractRequestHandler):
 
         intent = handler_input.request_envelope.request.intent
         sub_reddit_name = get_slot_value(intent)
-        if sub_reddit_name:
-            hot_trending_posts_titles = reddit_api.get_subreddit_titles_by_name(sub_reddit_name)
-        else:
-            hot_trending_posts_titles = reddit_api.get_hot_trending_post_titles("popular",
-                                                                                 constant.HOT_TRENDING_POSTS_COUNT)
+        print("Resolving sub reddit name to ", sub_reddit_name)
+        hot_trending_posts_posts = reddit_api.get_subreddit_posts_by_name(sub_reddit_name)
         session_id = handler_input.request_envelope.session.session_id
-        if not hot_trending_posts_titles:
+        if not hot_trending_posts_posts:
             speech_text = data.SORRY_EMPTY_PROMPT
         else:
-            speech_text = hot_trending_posts_titles[0]
-            session_posts[session_id] = hot_trending_posts_titles
+            speech_text = hot_trending_posts_posts[0].title
+            session_posts[session_id] = hot_trending_posts_posts
             session_index[session_id] = 0
 
         handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))\
