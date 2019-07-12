@@ -237,7 +237,8 @@ class RepeatIntentHandler(AbstractRequestHandler):
         # Build response
         handler_input.response_builder\
             .speak(speech_text)\
-            .add_directive(RenderTemplateDirective(template))
+            .add_directive(RenderTemplateDirective(template)) \
+            .set_should_end_session(False)
 
         return handler_input.response_builder.response
 
@@ -286,7 +287,6 @@ class UpvoteIntentHandler(AbstractRequestHandler):
             .add_directive(RenderTemplateDirective(template)) \
             .set_should_end_session(False)
 
-        handler_input.response_builder.speak(speech_text)
         return handler_input.response_builder.response
 
 
