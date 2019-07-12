@@ -2,8 +2,8 @@ import praw
 from data import Comment, Post
 
 reddit = praw.Reddit(client_id='',
-                     client_secret="",
-                     user_agent='TestUser')
+                     client_secret='',
+                     user_agent='my user agent')
 
 
 def get_hot_trending_post_titles(sub_reddit, number_of_posts):
@@ -35,15 +35,19 @@ def get_hot_posts(sub_reddit_name, number=10):
     try:
         for submission in reddit.subreddit(sub_reddit_name).hot(limit=number):
             try:
-                if submission.over_18:
+                if getattr(submission, 'over_18', False):
                     continue
+                if getattr(submission, 'author', None):
+                    author = getattr(submission.author, 'name', '')
+                else:
+                    author = ''
                 post = Post(title=getattr(submission, 'title', ''),
                             text=getattr(submission, 'selftext', ''),
                             up_votes=getattr(submission, 'ups', 0),
                             down_votes=getattr(submission, 'downs', 0),
                             url=getattr(submission, 'url', ''),
                             id=getattr(submission, 'id', ''),
-                            author=submission.author.name,
+                            author=author,
                             sub_reddit_name=sub_reddit_name)
                 if post.author == 'AutoModerator':
                     continue

@@ -13,6 +13,9 @@ import constant
 
 sb = SkillBuilder()
 
+session_posts = {}
+session_index = {}
+
 
 class LaunchRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
@@ -54,36 +57,37 @@ class ReadIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
 
-        hot_trending_posts_titles = []
-        try:
-            hot_trending_posts_titles += reddit_api.get_hot_trending_post_titles("popular",
+        hot_trending_posts_titles = reddit_api.get_hot_trending_post_titles("popular",
                                                                                  constant.HOT_TRENDING_POSTS_COUNT)
-        except Exception as e:
-            print(e)
+        session_id = handler_input.request_envelope.session.session_id
         if not hot_trending_posts_titles:
-            hot_trending_posts_titles.append("test")
-        for post_title in hot_trending_posts_titles:
-            handler_input.response_builder.speak(post_title).set_card(SimpleCard(post_title, post_title))\
+            speech_text = data.SORRY_EMPTY_PROMPT
+        else:
+            speech_text = hot_trending_posts_titles[0]
+            session_posts[session_id] = hot_trending_posts_titles
+            session_index[session_id] = 0
+
+        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))\
                 .set_should_end_session(False)
 
         return handler_input.response_builder.response
 
 
-# class NextIntentHandler(AbstractRequestHandler):
-#     def can_handle(self, handler_input):
-#         # type: (HandlerInput) -> bool
-#         return is_intent_name("ReadIntent")(handler_input)
-#
-#     def handle(self, handler_input):
-#         # type: (HandlerInput) -> Response
-#
-#         hot_trending_posts_titles = reddit_api.get_hot_trending_posts_titles("popular",
-#                                                                              constant.HOT_TRENDING_POSTS_COUNT)
-#         for post_title in hot_trending_posts_titles:
-#             handler_input.response_builder.speak(post_title).set_card(SimpleCard(post_title, post_title))
-#
-#         return handler_input.response_builder.response
-#
+class NextIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return is_intent_name("ReadIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+
+        hot_trending_posts_titles = reddit_api.get_hot_trending_posts_titles("popular",
+                                                                             constant.HOT_TRENDING_POSTS_COUNT)
+        for post_title in hot_trending_posts_titles:
+            handler_input.response_builder.speak(post_title).set_card(SimpleCard(post_title, post_title))
+
+        return handler_input.response_builder.response
+
 
 class UpvoteIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):

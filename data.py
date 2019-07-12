@@ -6,6 +6,7 @@ from gettext import gettext as _
 SKILL_NAME = "Social Feeds"
 
 WELCOME_PROMPT = _("Welcome to Social Feeds! You can start by asking, what's trending")
+SORRY_EMPTY_PROMPT = _("Sorry, we are unable to provide content at this time")
 GOODBYE_PROMPT = _("Goodbye! See you next time!")
 
 # TODO: create Post class here
