@@ -145,6 +145,8 @@ def get_cricket_subreddit_posts():
 for p in get_subreddit_posts_by_name("cricket"):
     print(p)
 
-upvote_a_post()
+def upvote_reddit_posts(post_id):
+    return upvote_a_post(post_id)
 
-downvote_a_post()
+def downvote_reddit_posts(post_id):
+    return downvote_a_post(post_id)
