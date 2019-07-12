@@ -1,9 +1,9 @@
 import praw
 from data import Comment, Post
 
-reddit = praw.Reddit(client_id='',
-                     client_secret='',
-                     user_agent='my user agent')
+reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
+                     client_secret="KJ7pQHa03HGlr1_Mhi35mXeixMw",
+                     user_agent='TestUser')
 
 
 def get_hot_trending_post_titles(sub_reddit, number_of_posts):
@@ -112,7 +112,3 @@ def get_cricket_subreddit_titles():
 
 def get_cricket_subreddit_posts():
     return get_subreddit_posts_by_name("cricket")
-
-
-for p in get_subreddit_posts_by_name("cricket"):
-    print(p)

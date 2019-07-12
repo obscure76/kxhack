@@ -10,6 +10,7 @@ from ask_sdk_model.ui import Image
 import data
 import reddit_api
 import constant
+import sys, os
 
 sb = SkillBuilder()
 
@@ -98,20 +99,37 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
         return handler_input.response_builder.response
 
 
+def print_exception_details():
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(exc_type, fname, exc_tb.tb_lineno)
+
+
 def get_slot_value(intent):
     try:
         slots = intent.slots
         slot_sub_reddit = slots["subreddit"]
-        if not slot_sub_reddit.resolutions:
+        print("Getting slot value")
+        slot_sub_reddit = slot_sub_reddit.to_dict()
+        print("slot_sub_reddit: ", slot_sub_reddit)
+
+        if not slot_sub_reddit["resolutions"]:
+            print("NO Resolution")
             return ""
-        resolution = slot_sub_reddit.resolutions[0]
-        if resolution.status.code == "ER_SUCCESS_MATCH":
-            return slot_sub_reddit.values[0].value.name
-        elif resolution.status.code == "ER_SUCCESS_NO_MATCH":
-            return slot_sub_reddit.value
-    except Exception:
-        pass
-    return "news"
+        resolution = slot_sub_reddit["resolutions"]["resolutions_per_authority"][0]
+        print("resolution: ", resolution)
+
+        if resolution["status"]["code"] == "ER_SUCCESS_MATCH":
+            print("Slot MATCH")
+            return resolution["values"][0]["value"]["name"]
+        elif resolution["status"]["code"] == "ER_SUCCESS_NO_MATCH":
+            print("NO SLOT MATCH")
+            return slot_sub_reddit["value"]
+    except Exception as e:
+        print(e)
+        print_exception_details()
+
+    return "cricket"
 
 
 class ReadIntentHandler(AbstractRequestHandler):
@@ -125,7 +143,7 @@ class ReadIntentHandler(AbstractRequestHandler):
         intent = handler_input.request_envelope.request.intent
         sub_reddit_name = get_slot_value(intent)
         if sub_reddit_name:
-            hot_trending_posts_titles = reddit_api.get_subreddit_posts_by_name(sub_reddit_name)
+            hot_trending_posts_titles = reddit_api.get_subreddit_titles_by_name(sub_reddit_name)
         else:
             hot_trending_posts_titles = reddit_api.get_hot_trending_post_titles("popular",
                                                                                  constant.HOT_TRENDING_POSTS_COUNT)
@@ -146,7 +164,7 @@ class ReadIntentHandler(AbstractRequestHandler):
 class NextIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return is_intent_name("NextIntent")(handler_input)
+        return is_intent_name("AMAZON.NextIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
@@ -161,7 +179,7 @@ class NextIntentHandler(AbstractRequestHandler):
 class RepeatIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return is_intent_name("RepeatIntent")(handler_input)
+        return is_intent_name("AMAZON.RepeatIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
