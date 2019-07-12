@@ -49,6 +49,22 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
         return handler_input.response_builder.response
 
 
+def get_slot_value(intent):
+    try:
+        slots = intent.slots
+        slot_sub_reddit = slots["subreddit"]
+        if not slot_sub_reddit.resolutions:
+            return ""
+        resolution = slot_sub_reddit.resolutions[0]
+        if resolution.status.code == "ER_SUCCESS_MATCH":
+            return slot_sub_reddit.values[0].value.name
+        elif resolution.status.code == "ER_SUCCESS_NO_MATCH":
+            return slot_sub_reddit.value
+    except Exception:
+        pass
+    return "news"
+
+
 class ReadIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
@@ -57,7 +73,12 @@ class ReadIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
 
-        hot_trending_posts_titles = reddit_api.get_hot_trending_post_titles("popular",
+        intent = handler_input.request_envelope.request.intent
+        sub_reddit_name = get_slot_value(intent)
+        if sub_reddit_name:
+            hot_trending_posts_titles = reddit_api.get_subreddit_posts_by_name(sub_reddit_name)
+        else:
+            hot_trending_posts_titles = reddit_api.get_hot_trending_post_titles("popular",
                                                                                  constant.HOT_TRENDING_POSTS_COUNT)
         session_id = handler_input.request_envelope.session.session_id
         if not hot_trending_posts_titles:
