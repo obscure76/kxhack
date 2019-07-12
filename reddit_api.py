@@ -55,10 +55,14 @@ def get_hot_posts(sub_reddit_name, number=10):
                     continue
                 for c in submission.comments:
                     try:
+                        if getattr(submission, 'author', None):
+                            author = getattr(submission.author, 'name', '')
+                        else:
+                            author = ''
                         comment = Comment(text=getattr(c, 'body', ''),
                                           up_votes=getattr(c, 'ups', 0),
                                           down_votes=getattr(c, 'downs', 0),
-                                          author=c.author.name)
+                                          author=author)
                         post.comments.append(comment)
                         if len(post.comments) == 5:
                             break
@@ -79,6 +83,7 @@ def get_subreddit_posts_by_name(sub_reddit_name):
     try:
         for submission in reddit.subreddits.search_by_name(sub_reddit_name):
             try:
+                print(submission.title)
                 return get_hot_posts(submission.title)
             except Exception as e:
                 print(e)
@@ -106,3 +111,7 @@ def get_cricket_subreddit_titles():
 
 def get_cricket_subreddit_posts():
     return get_subreddit_posts_by_name("cricket")
+
+
+for p in get_subreddit_posts_by_name("cricket"):
+    print(p)
