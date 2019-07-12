@@ -13,6 +13,7 @@ def get_hot_trending_post_titles(sub_reddit, number_of_posts):
             titles.append(submission.title)
     except Exception as e:
         print(e)
+        return []
     return titles
 
 
@@ -27,6 +28,7 @@ def get_subreddit_titles_by_name(sub_reddit_name):
             titles.append(submission.title)
     except Exception as e:
         print(e)
+        return []
     return titles
 
 
@@ -58,11 +60,14 @@ def get_hot_posts(sub_reddit_name, number=10):
                             break
                     except Exception as e:
                         print(e)
+                        return []
                 posts.append(post)
             except Exception as e:
                 print(e)
+                return []
     except Exception as e:
         print(e)
+        return []
     return posts
 
 
@@ -73,9 +78,10 @@ def get_subreddit_posts_by_name(sub_reddit_name):
                 return get_hot_posts(submission.title)
             except Exception as e:
                 print(e)
+                return []
     except Exception as e:
         print(e)
-    return []
+        return []
 
 
 def get_popular_titles():
