@@ -105,20 +105,22 @@ def get_subreddit_posts_by_name(sub_reddit_name):
 def upvote_a_post(post_id):
     try:
         post = reddit2.submission(post_id)
-        print (post)
         post.upvote()
+        return True
 
     except Exception as e:
-        print (e)
+        print(e)
+        return False
 
 def downvote_a_post(post_id):
     try:
         post = reddit2.submission(post_id)
-        print (post)
         post.downvote()
+        return True
 
     except Exception as e:
-        print (e)
+        print(e)
+        return False
 
 def get_popular_titles():
     return get_hot_trending_post_titles("popular", 3)
