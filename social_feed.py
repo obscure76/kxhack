@@ -276,6 +276,16 @@ class UpvoteIntentHandler(AbstractRequestHandler):
         else:
             speech_text = data.UNABLE_TO_UPVOTE_PROMPT
 
+        # Build GUI
+        current_post = get_current_post(session_id)
+        template = get_gui_template(current_post)
+
+        # Build response
+        handler_input.response_builder \
+            .speak(speech_text) \
+            .add_directive(RenderTemplateDirective(template)) \
+            .set_should_end_session(False)
+
         handler_input.response_builder.speak(speech_text)
         return handler_input.response_builder.response
 
