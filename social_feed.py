@@ -38,6 +38,34 @@ def get_next_item(session_id):
     return speech_text
 
 
+def get_current_item(session_id):
+    if not session_id:
+        return data.SORRY_EMPTY_PROMPT
+    posts = session_posts.get(session_id, [])
+    index = session_index.get(session_id, -1)
+    if not posts or index == -1:
+        return data.SORRY_EMPTY_PROMPT
+    if index < len(posts):
+        speech_text = posts[index]
+        session_index[session_id] = index
+    else:
+        try:
+            session_posts.pop(session_id)
+            session_index.pop(session_id)
+        except Exception:
+            pass
+        speech_text = data.SORRY_EMPTY_PROMPT
+    return speech_text
+
+
+def clear_item(session_id):
+    try:
+        session_posts.pop(session_id)
+        session_index.pop(session_id)
+    except Exception:
+        pass
+
+
 class LaunchRequestHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         return is_request_type("LaunchRequest")(handler_input)
@@ -97,13 +125,28 @@ class ReadIntentHandler(AbstractRequestHandler):
 class NextIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return is_intent_name("ReadIntent")(handler_input)
+        return is_intent_name("NextIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
 
         session_id = handler_input.request_envelope.session.session_id
         speech_text = get_next_item(session_id)
+        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
+
+        return handler_input.response_builder.response
+
+
+class RepeatIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return is_intent_name("RepeatIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+
+        session_id = handler_input.request_envelope.session.session_id
+        speech_text = get_current_item(session_id)
         handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
 
         return handler_input.response_builder.response
@@ -155,9 +198,17 @@ class HelpIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speech_text = "You can say hello to me!"
-        handler_input.response_builder.speak(speech_text).ask(speech_text).set_card(
-            SimpleCard("Hello World", speech_text))
+        # build VUI
+        speech_text = data.WELCOME_PROMPT
+
+        # build GUI
+        image = Image(data.UTIL_DATA["welcome_image"])
+        card = StandardCard(data.SKILL_NAME, "", image)
+
+        # build response
+        handler_input.response_builder\
+            .speak(speech_text)\
+            .set_card(card).set_should_end_session(False)
         return handler_input.response_builder.response
 
 
@@ -169,6 +220,8 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         speech_text = data.GOODBYE_PROMPT
+        session_id = handler_input.request_envelope.session.session_id
+        clear_item(session_id)
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
@@ -182,6 +235,7 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         # any cleanup logic goes here
+        clear_item(handler_input.request_envelope.session.session_id)
         return handler_input.response_builder.response
 
 
@@ -202,6 +256,11 @@ class AllExceptionHandler(AbstractExceptionHandler):
 ''' Add all request handlers here '''
 sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(ReadIntentHandler())
+sb.add_request_handler(NextIntentHandler())
+sb.add_request_handler(UpvoteIntentHandler())
+sb.add_request_handler(AddCommentIntentHandler())
+sb.add_request_handler(WriteCommentIntentHandler())
+sb.add_request_handler(RepeatIntentHandler())
 sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelAndStopIntentHandler())
