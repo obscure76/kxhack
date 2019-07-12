@@ -1,4 +1,5 @@
 import praw
+import constant
 from data import Comment, Post
 
 reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
@@ -39,7 +40,7 @@ def get_subreddit_titles_by_name(sub_reddit_name):
     return titles
 
 
-def get_hot_posts(sub_reddit_name, number=5):
+def get_hot_posts(sub_reddit_name, number=constant.HOT_TRENDING_POSTS_COUNT):
     posts = []
     try:
         for submission in reddit.subreddit(sub_reddit_name).hot(limit=number):
@@ -77,6 +78,7 @@ def get_hot_posts(sub_reddit_name, number=5):
                         print(e)
                         return []
                 posts.append(post)
+                print(post)
             except Exception as e:
                 print(e)
                 return []

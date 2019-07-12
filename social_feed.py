@@ -27,7 +27,7 @@ def get_next_item(session_id):
         return data.SORRY_EMPTY_PROMPT
     index += 1
     if index < len(posts):
-        speech_text = posts[index]
+        speech_text = posts[index].title
         session_index[session_id] = index
     else:
         try:
@@ -47,7 +47,7 @@ def get_current_item(session_id):
     if not posts or index == -1:
         return data.SORRY_EMPTY_PROMPT
     if index < len(posts):
-        speech_text = posts[index]
+        speech_text = posts[index].title
         session_index[session_id] = index
     else:
         try:
@@ -144,14 +144,20 @@ class ReadIntentHandler(AbstractRequestHandler):
         sub_reddit_name = get_slot_value(intent)
         print("Resolving sub reddit name to ", sub_reddit_name)
         hot_trending_posts_posts = reddit_api.get_subreddit_posts_by_name(sub_reddit_name)
-        session_id = handler_input.request_envelope.session.session_id
-        if not hot_trending_posts_posts:
-            speech_text = data.SORRY_EMPTY_PROMPT
-        else:
-            speech_text = hot_trending_posts_posts[0].title
-            session_posts[session_id] = hot_trending_posts_posts
-            session_index[session_id] = 0
+        speech_text = data.SORRY_EMPTY_PROMPT
+        try:
+            session_id = handler_input.request_envelope.session.session_id
+            for i in range(len(hot_trending_posts_posts)):
+                if hot_trending_posts_posts[i].title and len(hot_trending_posts_posts[i].title) < 100:
+                    speech_text = hot_trending_posts_posts[i].title
+                    session_index[session_id] = i
+                    session_posts[session_id] = hot_trending_posts_posts
+                    break
+        except Exception as e:
+            print(e)
+            print_exception_details()
 
+        print("SpeechText ", speech_text)
         handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))\
                 .set_should_end_session(False)
 
