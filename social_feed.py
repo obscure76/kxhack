@@ -2,15 +2,18 @@ from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
+from ask_sdk_model.interfaces.display import (Image, RenderTemplateDirective,
+                                              ListItem, BodyTemplate2, BodyTemplate6)
 from ask_sdk_model.ui import SimpleCard
-from ask_sdk_model.ui import StandardCard
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
-from ask_sdk_model.ui import Image
+from ask_sdk_core.response_helper import (
+    get_plain_text_content, get_rich_text_content)
 import data
 import reddit_api
 import constant
-import sys, os
+import sys
+import os
 
 sb = SkillBuilder()
 
@@ -72,18 +75,21 @@ class LaunchRequestHandler(AbstractRequestHandler):
         return is_request_type("LaunchRequest")(handler_input)
 
     def handle(self, handler_input):
-
         # build VUI
         speech_text = data.WELCOME_PROMPT
 
         # build GUI
-        image = Image(data.UTIL_DATA["welcome_image"])
-        card = StandardCard(data.SKILL_NAME, "", image)
+        template = BodyTemplate6(
+            background_image=data.welcome_image,
+            text_content=get_plain_text_content(primary_text="Welcome to " + data.SKILL_NAME))
+
+        print("LaunchRequest template: " + template.to_str())
 
         # build response
-        handler_input.response_builder\
-            .speak(speech_text)\
-            .set_card(card).set_should_end_session(False)
+        handler_input.response_builder \
+            .speak(speech_text) \
+            .add_directive(RenderTemplateDirective(template)) \
+            .set_should_end_session(False)
         return handler_input.response_builder.response
 
 
@@ -93,7 +99,7 @@ class HelloWorldIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speech_text = data.WELCOME
+        speech_text = data.WELCOME_PROMPT
         handler_input.response_builder.speak(speech_text).set_card(
             SimpleCard("Hello World", speech_text))
         return handler_input.response_builder.response
@@ -239,18 +245,19 @@ class HelpIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.HelpIntent")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
         # build VUI
         speech_text = data.WELCOME_PROMPT
 
         # build GUI
-        image = Image(data.UTIL_DATA["welcome_image"])
-        card = StandardCard(data.SKILL_NAME, "", image)
+        template = BodyTemplate6()
+        template.background_image = data.welcome_image
+        template.text_content.primary_text = data.SKILL_NAME
 
         # build response
         handler_input.response_builder\
             .speak(speech_text)\
-            .set_card(card).set_should_end_session(False)
+            .add_directive(RenderTemplateDirective(template))\
+            .set_should_end_session(False)
         return handler_input.response_builder.response
 
 
@@ -289,7 +296,7 @@ class AllExceptionHandler(AbstractExceptionHandler):
     def handle(self, handler_input, exception):
         # type: (HandlerInput, Exception) -> Response
         # Log the exception in CloudWatch Logs
-        print(exception)
+        print(exception.with_traceback())
         speech = "Sorry, I didn't get it. Can you please say it again!!"
         handler_input.response_builder.speak(speech).ask(speech)
         return handler_input.response_builder.response
