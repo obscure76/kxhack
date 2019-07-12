@@ -9,10 +9,10 @@ reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
 reddit2 = praw.Reddit(client_id='fA5TZDgaxeH3YQ',
                      client_secret="r0B8i0yF7RTZOG1yMRtbL_bj9vY",
                       password="testtest",
-                     user_agent='',
-                     username="")
+                     user_agent='AlexaSocialFeed',
+                     username="testtest")
 
-print(reddit2.user.me())
+
 
 def get_hot_trending_post_titles(sub_reddit, number_of_posts):
     titles = []
@@ -122,6 +122,21 @@ def downvote_a_post(post_id):
         print(e)
         return False
 
+def getthetopcomments_from_a_post(post_id, number_of_comments=5):
+    comments = []
+    count = 0
+    try:
+        submission = reddit.submission(post_id)
+        for top_level_comment in submission.comments:
+            comments.append(top_level_comment.body)
+            count = count + 1
+            if count == number_of_comments:
+                break
+    except Exception as e:
+        print(e)
+        return comments
+    return comments
+
 def get_popular_titles():
     return get_hot_trending_post_titles("popular", 3)
 
@@ -142,11 +157,17 @@ def get_cricket_subreddit_posts():
     return get_subreddit_posts_by_name("cricket")
 
 
-for p in get_subreddit_posts_by_name("cricket"):
-    print(p)
+'''for p in get_subreddit_posts_by_name("cricket"):
+    print(p)'''
 
-def upvote_reddit_posts(post_id):
-    return upvote_a_post(post_id)
+def upvote_reddit_posts():
+    return upvote_a_post('cc3yye')
 
-def downvote_reddit_posts(post_id):
-    return downvote_a_post(post_id)
+def downvote_reddit_posts():
+    return downvote_a_post('cc3yye')
+
+
+def getthetop10comments_from_a_post():
+    print (getthetopcomments_from_a_post("cc3yye",10))
+
+getthetop10comments_from_a_post()
