@@ -1,10 +1,18 @@
 import praw
 from data import Comment, Post
 
-reddit = praw.Reddit(client_id='',
-                     client_secret='',
-                     user_agent='my user agent')
+reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
+                     client_secret="KJ7pQHa03HGlr1_Mhi35mXeixMw",
+                     user_agent='TestUser')
 
+
+reddit2 = praw.Reddit(client_id='fA5TZDgaxeH3YQ',
+                     client_secret="r0B8i0yF7RTZOG1yMRtbL_bj9vY",
+                      password="testtest",
+                     user_agent='',
+                     username="")
+
+print(reddit2.user.me())
 
 def get_hot_trending_post_titles(sub_reddit, number_of_posts):
     titles = []
@@ -94,6 +102,24 @@ def get_subreddit_posts_by_name(sub_reddit_name):
         return []
 
 
+def upvote_a_post(post_id):
+    try:
+        post = reddit2.submission(post_id)
+        print (post)
+        post.upvote()
+
+    except Exception as e:
+        print (e)
+
+def downvote_a_post(post_id):
+    try:
+        post = reddit2.submission(post_id)
+        print (post)
+        post.downvote()
+
+    except Exception as e:
+        print (e)
+
 def get_popular_titles():
     return get_hot_trending_post_titles("popular", 3)
 
@@ -116,3 +142,7 @@ def get_cricket_subreddit_posts():
 
 for p in get_subreddit_posts_by_name("cricket"):
     print(p)
+
+upvote_a_post()
+
+downvote_a_post()
