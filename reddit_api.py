@@ -32,7 +32,7 @@ def get_subreddit_titles_by_name(sub_reddit_name):
     return titles
 
 
-def get_hot_posts(sub_reddit_name, number=10):
+def get_hot_posts(sub_reddit_name, number=5):
     posts = []
     try:
         for submission in reddit.subreddit(sub_reddit_name).hot(limit=number):
@@ -81,13 +81,14 @@ def get_hot_posts(sub_reddit_name, number=10):
 
 def get_subreddit_posts_by_name(sub_reddit_name):
     try:
-        for submission in reddit.subreddits.search_by_name(sub_reddit_name):
-            try:
-                print(submission.title)
-                return get_hot_posts(submission.title)
-            except Exception as e:
-                print(e)
-                return []
+        sub_reddits = reddit.subreddits.search_by_name(sub_reddit_name)
+        if not sub_reddits:
+            return []
+        try:
+            return get_hot_posts(sub_reddits[0].title)
+        except Exception as e:
+            print(e)
+            return []
     except Exception as e:
         print(e)
         return []
