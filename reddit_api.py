@@ -3,6 +3,8 @@ import constant
 import sys
 import os
 from data import Comment, Post
+from cachetools import cached, TTLCache
+cache = TTLCache(maxsize=100, ttl=30)
 
 reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
                      client_secret="KJ7pQHa03HGlr1_Mhi35mXeixMw",
@@ -73,7 +75,7 @@ def get_hot_posts(sub_reddit_name, number=constant.HOT_TRENDING_POSTS_COUNT):
                             author=author,
                             sub_reddit_name=sub_reddit_name)
                 print("Pre cleanup", post)
-                if post.author == 'AutoModerator':
+                if post.author == 'AutoModerator' or len(post.text) > constant.MAX_ALLOWED_CHARS_IN_POST:
                     continue
                 # for c in submission.comments:
                 #     try:
@@ -93,6 +95,7 @@ def get_hot_posts(sub_reddit_name, number=constant.HOT_TRENDING_POSTS_COUNT):
                 #         print_exception_details(e)
                 #         return []
                 posts.append(post)
+                print(submission)
                 print("Post cleanup", post)
             except Exception as e:
                 print_exception_details(e)
@@ -103,6 +106,7 @@ def get_hot_posts(sub_reddit_name, number=constant.HOT_TRENDING_POSTS_COUNT):
     return posts
 
 
+@cached(cache)
 def get_subreddit_posts_by_name(sub_reddit_name):
     print("Getting subreddit posts for", sub_reddit_name)
     if sub_reddit_name == constant.DEFAULT_SUB_REDDIT:

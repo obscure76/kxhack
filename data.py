@@ -2,6 +2,7 @@
 
 # Resolving gettext as _ for module loading.
 from gettext import gettext as _
+from ask_sdk_model.interfaces.display import (Image, ImageInstance)
 
 SKILL_NAME = "Social Feeds"
 
@@ -11,8 +12,6 @@ SORRY_EMPTY_PROMPT = _("Sorry, we are unable to provide content at this time")
 GOODBYE_PROMPT = _("Goodbye! See you next time!")
 UNABLE_TO_UPVOTE_PROMPT = _("Sorry, could not upvote this post")
 UPVOTE_SUCCESSFUL_PROMPT = _("Kudos! You just upvoted this post")
-
-# TODO: create Post class here
 
 
 class Comment(object):
@@ -58,10 +57,9 @@ class Post(object):
         return s
 
 
-UTIL_DATA = {
-    "welcome_image": "https://media.wired.com/photos/5abece0a9ccf76090d775185/"
-                     "master/w_1920,c_limit/hangoutsscreen_2.jpg"
-}
+welcome_image_url = "https://cdn.neow.in/news/images/uploaded/2018/03/1519944297_redditlogo2_story.jpg"
+
+welcome_image = Image(sources=[ImageInstance(url=welcome_image_url)])
 
 MOCK_POST_DATA = {
     "id": "2234",
