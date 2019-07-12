@@ -2,8 +2,7 @@ from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
-from ask_sdk_model.interfaces.display import (RenderTemplateDirective, BodyTemplate6)
-from ask_sdk_model.ui import SimpleCard
+from ask_sdk_model.interfaces.display import (RenderTemplateDirective, BodyTemplate6, BodyTemplate2)
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_core.response_helper import (get_plain_text_content)
@@ -12,6 +11,7 @@ from data import Post
 import reddit_api
 import constant
 import sys
+import os
 
 sb = SkillBuilder()
 
@@ -118,6 +118,12 @@ class LaunchRequestHandler(AbstractRequestHandler):
         return handler_input.response_builder.response
 
 
+def print_exception_details():
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(exc_type, fname, exc_tb.tb_lineno)
+
+
 def get_slot_value(intent):
     try:
         slots = intent.slots
@@ -171,7 +177,16 @@ class ReadIntentHandler(AbstractRequestHandler):
             reddit_api.print_exception_details(e)
 
         print("SpeechText ", speech_text)
-        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))\
+
+        # Build GUI
+        session_id = handler_input.request_envelope.session.session_id
+        current_post = get_current_post(session_id)
+        template = get_gui_template(current_post)
+
+        # Build response
+        handler_input.response_builder \
+            .speak(speech_text) \
+            .add_directive(RenderTemplateDirective(template))\
             .set_should_end_session(False)
 
         return handler_input.response_builder.response
@@ -187,7 +202,16 @@ class NextIntentHandler(AbstractRequestHandler):
 
         session_id = handler_input.request_envelope.session.session_id
         speech_text = get_next_item(session_id)
-        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
+
+        # Build GUI
+        current_post = get_current_post(session_id)
+        template = get_gui_template(current_post)
+
+        # Build response
+        handler_input.response_builder \
+            .speak(speech_text) \
+            .add_directive(RenderTemplateDirective(template)) \
+            .set_should_end_session(False)
 
         return handler_input.response_builder.response
 
@@ -198,13 +222,41 @@ class RepeatIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.RepeatIntent")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-
+        # Build VUI
         session_id = handler_input.request_envelope.session.session_id
-        speech_text = get_current_item(session_id)
-        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
+        current_post = get_current_post(session_id)
+        current_post_title = current_post.title
+        if current_post is None:
+            speech_text = data.SORRY_EMPTY_PROMPT
+        else:
+            speech_text = current_post_title
+
+        # Build GUI
+        template = get_gui_template(current_post)
+
+        # Build response
+        handler_input.response_builder\
+            .speak(speech_text)\
+            .add_directive(RenderTemplateDirective(template))
 
         return handler_input.response_builder.response
+
+
+def get_gui_template(current_post):
+    current_post_title = current_post.title
+    current_post_text = current_post.text
+    current_post_author = current_post.author
+    current_post_subreddit = "r/" + current_post.sub_reddit_name + "     Posted by u/" + current_post_author
+    current_post_url = current_post.url
+    template = BodyTemplate2(
+        background_image=data.default_background,
+        title=current_post_subreddit,
+        text_content=get_plain_text_content(primary_text=current_post_title,
+                                            secondary_text=current_post_text,
+                                            tertiary_text="\n ⬆️ " + str(current_post.up_votes) + " ⬇️"),
+        image=data.get_image_by_url(current_post_url))
+    print("Generated GUI template: " + template.to_str())
+    return template
 
 
 class UpvoteIntentHandler(AbstractRequestHandler):
@@ -224,48 +276,7 @@ class UpvoteIntentHandler(AbstractRequestHandler):
         else:
             speech_text = data.UNABLE_TO_UPVOTE_PROMPT
 
-        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
-
-        return handler_input.response_builder.response
-
-
-class ExpandPostIntentHandler(AbstractRequestHandler):
-    def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
-        return is_intent_name("ExpandPostIntent")(handler_input)
-
-    def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-
-        speech_text = "ExpandPostIntent"
-        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
-
-        return handler_input.response_builder.response
-
-
-class AddCommentIntentHandler(AbstractRequestHandler):
-    def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
-        return is_intent_name("Intent")(handler_input)
-
-    def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        speech_text = "Hello World"
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text))
-        return handler_input.response_builder.response
-
-
-class WriteCommentIntentHandler(AbstractRequestHandler):
-    def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
-        return is_intent_name("HelloWorldIntent")(handler_input)
-
-    def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        speech_text = "Hello World"
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text))
+        handler_input.response_builder.speak(speech_text)
         return handler_input.response_builder.response
 
 
@@ -275,19 +286,9 @@ class HelpIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.HelpIntent")(handler_input)
 
     def handle(self, handler_input):
-        # build VUI
-        speech_text = data.WELCOME_PROMPT
-
-        # build GUI
-        template = BodyTemplate6()
-        template.background_image = data.welcome_image
-        template.text_content.primary_text = data.SKILL_NAME
-
-        # build response
-        handler_input.response_builder\
-            .speak(speech_text)\
-            .add_directive(RenderTemplateDirective(template))\
-            .set_should_end_session(False)
+        # type: (HandlerInput) -> Response
+        speech_text = "Try ask, what's trending"
+        handler_input.response_builder.speak(speech_text)
         return handler_input.response_builder.response
 
 
@@ -302,8 +303,7 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
         speech_text = data.GOODBYE_PROMPT
         session_id = handler_input.request_envelope.session.session_id
         clear_item(session_id)
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard(speech_text, speech_text))
+        handler_input.response_builder.speak(speech_text)
         return handler_input.response_builder.response
 
 
@@ -331,7 +331,7 @@ class AllExceptionHandler(AbstractExceptionHandler):
         tb = sys.exc_info()[2]
         print(exception.with_traceback(tb))
         
-        speech = "Sorry, I didn't get it. Can you please say it again!!"
+        speech = "Sorry, I didn't get it. Can you please say it again?"
         handler_input.response_builder.speak(speech).ask(speech)
         return handler_input.response_builder.response
 
@@ -341,10 +341,7 @@ sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(ReadIntentHandler())
 sb.add_request_handler(NextIntentHandler())
 sb.add_request_handler(UpvoteIntentHandler())
-sb.add_request_handler(AddCommentIntentHandler())
-sb.add_request_handler(WriteCommentIntentHandler())
 sb.add_request_handler(RepeatIntentHandler())
-sb.add_request_handler(ExpandPostIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelAndStopIntentHandler())
 sb.add_exception_handler(AllExceptionHandler())

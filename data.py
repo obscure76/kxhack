@@ -58,8 +58,21 @@ class Post(object):
 
 
 welcome_image_url = "https://cdn.neow.in/news/images/uploaded/2018/03/1519944297_redditlogo2_story.jpg"
+default_background_url = "https://i.ibb.co/c3RPVfQ/reddit-background.jpg"
 
 welcome_image = Image(sources=[ImageInstance(url=welcome_image_url)])
+default_background = Image(sources=[ImageInstance(url=default_background_url)])
+
+
+def get_image_by_url(url):
+    if url is not None:
+        if url.endswith(".jpg"):
+            return Image(sources=[ImageInstance(url=url)])
+        else:
+            return None
+    else:
+        return None
+
 
 MOCK_POST_DATA = {
     "id": "2234",

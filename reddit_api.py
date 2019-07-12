@@ -3,19 +3,16 @@ import constant
 import sys
 import os
 from data import Comment, Post
-from cachetools import cached, TTLCache
-cache = TTLCache(maxsize=100, ttl=30)
 
 reddit = praw.Reddit(client_id='Wffd8ItbvTdUwQ',
                      client_secret="KJ7pQHa03HGlr1_Mhi35mXeixMw",
                      user_agent='TestUser')
 
-
 reddit_with_user_details = praw.Reddit(client_id='fA5TZDgaxeH3YQ',
-                                       client_secret="r0B8i0yF7RTZOG1yMRtbL_bj9vY",
-                                       password="testtest",
-                                       user_agent='AlexaSocialFeed',
-                                       username="testtest")
+                     client_secret="r0B8i0yF7RTZOG1yMRtbL_bj9vY",
+                     password="testtest",
+                     user_agent='TestUser',
+                     username="AlexaSocialFeed")
 
 
 def print_exception_details(e, msg=''):
@@ -106,7 +103,6 @@ def get_hot_posts(sub_reddit_name, number=constant.HOT_TRENDING_POSTS_COUNT):
     return posts
 
 
-@cached(cache)
 def get_subreddit_posts_by_name(sub_reddit_name):
     print("Getting subreddit posts for", sub_reddit_name)
     if sub_reddit_name == constant.DEFAULT_SUB_REDDIT:
