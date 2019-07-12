@@ -5,9 +5,12 @@ from gettext import gettext as _
 
 SKILL_NAME = "Social Feeds"
 
+# Prompts
 WELCOME_PROMPT = _("Welcome to Social Feeds! You can start by asking, what's trending")
 SORRY_EMPTY_PROMPT = _("Sorry, we are unable to provide content at this time")
 GOODBYE_PROMPT = _("Goodbye! See you next time!")
+UNABLE_TO_UPVOTE_PROMPT = _("Sorry, could not upvote this post")
+UPVOTE_SUCCESSFUL_PROMPT = _("Kudos! You just upvoted this post")
 
 # TODO: create Post class here
 
@@ -29,7 +32,7 @@ class Comment(object):
 
 
 class Post(object):
-    def __init__(self, id, title='', text = '', up_votes=0, down_votes=0, url='', comments=[],
+    def __init__(self, id=None, title='', text = '', up_votes=0, down_votes=0, url='', comments=[],
                  author='', sub_reddit_name=''):
         self.id = id
         self.title = title
@@ -46,9 +49,9 @@ class Post(object):
         s += "id=%s," % self.id
         s += "title=%s," % self.title
         s += "text=%s," % self.text
-        s += "up_votes=%s,"% self.up_votes
-        s += "down_votes=%s,"% self.down_votes
-        s += "url=%s,"% self.url
+        s += "up_votes=%s," % self.up_votes
+        s += "down_votes=%s," % self.down_votes
+        s += "url=%s," % self.url
         s += "comments=%s," % self.comments
         s += "author=%s," % self.author
         s += "sub_reddit_name=%s" % self.sub_reddit_name

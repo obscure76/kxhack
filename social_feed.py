@@ -8,9 +8,9 @@ from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_model.ui import Image
 import data
+from data import Post
 import reddit_api
 import constant
-import sys, os
 
 sb = SkillBuilder()
 
@@ -33,8 +33,8 @@ def get_next_item(session_id):
         try:
             session_posts.pop(session_id)
             session_index.pop(session_id)
-        except Exception:
-            pass
+        except Exception as e:
+            reddit_api.print_exception_details(e)
         speech_text = data.SORRY_EMPTY_PROMPT
     return speech_text
 
@@ -53,18 +53,45 @@ def get_current_item(session_id):
         try:
             session_posts.pop(session_id)
             session_index.pop(session_id)
-        except Exception:
-            pass
+        except Exception as e:
+            reddit_api.print_exception_details(e)
         speech_text = data.SORRY_EMPTY_PROMPT
     return speech_text
 
 
+def get_current_post(session_id):
+    current_post = Post()
+    if not session_id:
+        return current_post
+    posts = session_posts.get(session_id, [])
+    index = session_index.get(session_id, -1)
+    if not posts or index == -1:
+        return current_post
+    if index < len(posts):
+        current_post = posts[index]
+        session_index[session_id] = index
+    else:
+        try:
+            session_posts.pop(session_id)
+            session_index.pop(session_id)
+        except Exception as e:
+            reddit_api.print_exception_details(e)
+
+    return current_post
+
+
 def clear_item(session_id):
+    if not session_id:
+        return
+    posts = session_posts.get(session_id, [])
+    index = session_index.get(session_id, -1)
+    if not posts or index == -1:
+        return
     try:
         session_posts.pop(session_id)
         session_index.pop(session_id)
-    except Exception:
-        pass
+    except Exception as e:
+        reddit_api.print_exception_details(e)
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -85,24 +112,6 @@ class LaunchRequestHandler(AbstractRequestHandler):
             .speak(speech_text)\
             .set_card(card).set_should_end_session(False)
         return handler_input.response_builder.response
-
-
-class HelloWorldIntentHandler(AbstractRequestHandler):
-    def can_handle(self, handler_input):
-        return is_intent_name("HelloWorldIntent")(handler_input)
-
-    def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        speech_text = data.WELCOME
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text))
-        return handler_input.response_builder.response
-
-
-def print_exception_details():
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(exc_type, fname, exc_tb.tb_lineno)
 
 
 def get_slot_value(intent):
@@ -126,8 +135,7 @@ def get_slot_value(intent):
             print("NO SLOT MATCH")
             return slot_sub_reddit["value"]
     except Exception as e:
-        print(e)
-        print_exception_details()
+        reddit_api.print_exception_details(e)
 
     return constant.DEFAULT_SUB_REDDIT
 
@@ -144,22 +152,26 @@ class ReadIntentHandler(AbstractRequestHandler):
         sub_reddit_name = get_slot_value(intent)
         print("Resolving sub reddit name to ", sub_reddit_name)
         hot_trending_posts_posts = reddit_api.get_subreddit_posts_by_name(sub_reddit_name)
+        for t in hot_trending_posts_posts:
+            print(t)
+
         speech_text = data.SORRY_EMPTY_PROMPT
         try:
             session_id = handler_input.request_envelope.session.session_id
+            print("session_id here is", session_id)
+
             for i in range(len(hot_trending_posts_posts)):
-                if hot_trending_posts_posts[i].title and len(hot_trending_posts_posts[i].title) < 100:
+                if hot_trending_posts_posts[i].title: #and len(hot_trending_posts_posts[i].title) < 100:
                     speech_text = hot_trending_posts_posts[i].title
                     session_index[session_id] = i
                     session_posts[session_id] = hot_trending_posts_posts
                     break
         except Exception as e:
-            print(e)
-            print_exception_details()
+            reddit_api.print_exception_details(e)
 
         print("SpeechText ", speech_text)
         handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))\
-                .set_should_end_session(False)
+            .set_should_end_session(False)
 
         return handler_input.response_builder.response
 
@@ -201,9 +213,18 @@ class UpvoteIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speech_text = "upvote intent"
-        handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("upvote intent", speech_text))
+
+        session_id = handler_input.request_envelope.session.session_id
+        current_post_id = get_current_post(session_id).id
+        if not current_post_id:
+            speech_text = data.UNABLE_TO_UPVOTE_PROMPT
+        elif reddit_api.upvote_a_post(current_post_id):
+            speech_text = data.UPVOTE_SUCCESSFUL_PROMPT
+        else:
+            speech_text = data.UNABLE_TO_UPVOTE_PROMPT
+
+        handler_input.response_builder.speak(speech_text).set_card(SimpleCard(speech_text, speech_text))
+
         return handler_input.response_builder.response
 
 
@@ -257,7 +278,8 @@ class HelpIntentHandler(AbstractRequestHandler):
 class CancelAndStopIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return is_intent_name("AMAZON.CancelIntent")(handler_input) or is_intent_name("AMAZON.StopIntent")(handler_input)
+        return is_intent_name("AMAZON.CancelIntent")(handler_input) or \
+               is_intent_name("AMAZON.StopIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
@@ -265,7 +287,7 @@ class CancelAndStopIntentHandler(AbstractRequestHandler):
         session_id = handler_input.request_envelope.session.session_id
         clear_item(session_id)
         handler_input.response_builder.speak(speech_text).set_card(
-            SimpleCard("Hello World", speech_text))
+            SimpleCard(speech_text, speech_text))
         return handler_input.response_builder.response
 
 
@@ -303,7 +325,6 @@ sb.add_request_handler(UpvoteIntentHandler())
 sb.add_request_handler(AddCommentIntentHandler())
 sb.add_request_handler(WriteCommentIntentHandler())
 sb.add_request_handler(RepeatIntentHandler())
-sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelAndStopIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
